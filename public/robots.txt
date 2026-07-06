@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hueport-color-site.pages.dev/sitemap-index.xml

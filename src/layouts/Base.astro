@@ -8,7 +8,7 @@ export interface Props {
   ogImagePath?: string;
 }
 
-const { title, description, canonicalPath, ogImagePath = '/og-image.png' } = Astro.props;
+const { title, description, canonicalPath, ogImagePath = '/og-image.jpg' } = Astro.props;
 const site = Astro.site ?? new URL('https://hueport-color-site.pages.dev');
 const canonicalUrl = new URL(canonicalPath, site).toString();
 const ogImageUrl = new URL(ogImagePath, site).toString();
@@ -20,6 +20,7 @@ const ogImageUrl = new URL(ogImagePath, site).toString();
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" href="/og-image.jpg" type="image/jpeg" />
     <link rel="canonical" href={canonicalUrl} />
     <meta name="robots" content="index, follow" />
     <meta property="og:type" content="website" />

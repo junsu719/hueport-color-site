@@ -6,6 +6,7 @@ import ColorSwatch from '../../components/ColorSwatch.astro';
 import ValueTable from '../../components/ValueTable.astro';
 import HarmonyGrid from '../../components/HarmonyGrid.astro';
 import AppCTA from '../../components/AppCTA.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 import { getIntroText } from '../../lib/text-variants';
 import { hexToTailwindClass } from '../../lib/color-math';
 
@@ -60,26 +61,10 @@ const tailwindMatch = hexToTailwindClass(record.hex);
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebPage',
-      name: title,
-      description,
-      url: `https://hueport-color-site.pages.dev/color/${record.slug}/`,
-    },
-    {
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://hueport-color-site.pages.dev/' },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: record.name,
-          item: `https://hueport-color-site.pages.dev/color/${record.slug}/`,
-        },
-      ],
-    },
-  ],
+  '@type': 'WebPage',
+  name: title,
+  description,
+  url: `https://hueport-color-site.pages.dev/color/${record.slug}/`,
 };
 ---
 <Base title={title} description={description} canonicalPath={`/color/${record.slug}/`}>
@@ -88,6 +73,13 @@ const jsonLd = {
   </Fragment>
 
   <main class="mx-auto max-w-3xl px-4 py-10">
+    <Breadcrumb
+      items={[
+        { name: 'Home', href: '/' },
+        { name: 'Colors', href: '/colors/' },
+        { name: record.name },
+      ]}
+    />
     <ColorSwatch hex={record.hex} name={record.name} size="lg" />
     <h1 class="mt-6 text-3xl font-semibold">{record.name}</h1>
     <p class="mt-2 font-mono text-neutral-500">{record.hex}</p>

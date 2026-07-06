@@ -1,0 +1,45 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../../layouts/Base.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+interface SearchEntry {
+  name: string;
+  hex: string;
+  slug: string;
+}
+
+const searchIndexPath = join(process.cwd(), 'data', 'colors', 'search-index.json');
+const allColors: SearchEntry[] = JSON.parse(readFileSync(searchIndexPath, 'utf-8'));
+
+const counts = new Map<string, number>();
+for (const color of allColors) {
+  const letter = /^[a-z]/i.test(color.name) ? color.name[0].toUpperCase() : '#';
+  counts.set(letter, (counts.get(letter) ?? 0) + 1);
+}
+
+const letters = [...counts.entries()].sort(([a], [b]) => a.localeCompare(b));
+
+const title = 'Browse Colors A–Z | HuePort Color';
+const description = `Browse all ${allColors.length} named colors alphabetically, with HEX, RGB, HSL, CMYK and OKLCH values for each.`;
+---
+<Base title={title} description={description} canonicalPath="/colors/">
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <Breadcrumb items={[{ name: 'Home', href: '/' }, { name: 'Colors' }]} />
+    <h1 class="text-3xl font-semibold">Browse colors A–Z</h1>
+    <p class="mt-2 text-neutral-600">{allColors.length} named colors, grouped alphabetically.</p>
+
+    <div class="mt-8 grid grid-cols-4 gap-3 sm:grid-cols-6">
+      {letters.map(([letter, count]) => (
+        <a
+          href={`/colors/${letter}/`}
+          class="rounded-lg border border-neutral-200 p-4 text-center hover:border-neutral-400"
+        >
+          <span class="text-xl font-semibold">{letter}</span>
+          <span class="mt-1 block text-xs text-neutral-500">{count}</span>
+        </a>
+      ))}
+    </div>
+  </main>
+</Base>

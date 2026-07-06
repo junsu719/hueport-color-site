@@ -1,0 +1,57 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../../layouts/Base.astro';
+import ColorSwatch from '../../components/ColorSwatch.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+interface SearchEntry {
+  name: string;
+  hex: string;
+  slug: string;
+}
+
+export async function getStaticPaths() {
+  const searchIndexPath = join(process.cwd(), 'data', 'colors', 'search-index.json');
+  const allColors: SearchEntry[] = JSON.parse(readFileSync(searchIndexPath, 'utf-8'));
+
+  const byLetter = new Map<string, SearchEntry[]>();
+  for (const color of allColors) {
+    const letter = /^[a-z]/i.test(color.name) ? color.name[0].toUpperCase() : '#';
+    if (!byLetter.has(letter)) byLetter.set(letter, []);
+    byLetter.get(letter)!.push(color);
+  }
+
+  return [...byLetter.entries()].map(([letter, colors]) => ({
+    params: { letter },
+    props: { colors: colors.sort((a, b) => a.name.localeCompare(b.name)) },
+  }));
+}
+
+const { letter } = Astro.params;
+const { colors } = Astro.props as { colors: SearchEntry[] };
+const title = `Colors Starting With "${letter}" | HuePort Color`;
+const description = `Browse ${colors.length} named colors starting with "${letter}" — HEX, RGB, HSL values and more.`;
+---
+<Base title={title} description={description} canonicalPath={`/colors/${letter}/`}>
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <Breadcrumb
+      items={[
+        { name: 'Home', href: '/' },
+        { name: 'Colors', href: '/colors/' },
+        { name: `"${letter}"` },
+      ]}
+    />
+    <h1 class="text-3xl font-semibold">Colors starting with "{letter}"</h1>
+    <ul class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {colors.map((color) => (
+        <li>
+          <a href={`/color/${color.slug}/`} class="flex items-center gap-2">
+            <ColorSwatch hex={color.hex} name={color.name} />
+            <span class="text-sm">{color.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</Base>

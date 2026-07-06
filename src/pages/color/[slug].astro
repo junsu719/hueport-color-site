@@ -1,0 +1,153 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../../layouts/Base.astro';
+import ColorSwatch from '../../components/ColorSwatch.astro';
+import ValueTable from '../../components/ValueTable.astro';
+import HarmonyGrid from '../../components/HarmonyGrid.astro';
+import AppCTA from '../../components/AppCTA.astro';
+import { getIntroText } from '../../lib/text-variants';
+import { hexToTailwindClass } from '../../lib/color-math';
+
+interface ColorRecord {
+  name: string;
+  hex: string;
+  slug: string;
+  rgb: { r: number; g: number; b: number };
+  hsl: { h: number; s: number; l: number };
+  cmyk: { c: number; m: number; y: number; k: number };
+  lab: { l: number; a: number; b: number };
+  oklch: { l: number; c: number; h: number };
+  harmonies: {
+    complementary: { name: string; slug: string; hex: string };
+    analogous: Array<{ name: string; slug: string; hex: string }>;
+    triadic: Array<{ name: string; slug: string; hex: string }>;
+    splitComplementary: Array<{ name: string; slug: string; hex: string }>;
+  };
+  tintsAndShades: { tints: string[]; shades: string[] };
+  nearest: Array<{ name: string; slug: string; hex: string }>;
+}
+
+export async function getStaticPaths() {
+  const dataDir = join(process.cwd(), 'data', 'colors');
+  const manifest: Array<{ slug: string; shard: number }> = JSON.parse(
+    readFileSync(join(dataDir, 'index.json'), 'utf-8'),
+  );
+
+  const shardCache = new Map<number, ColorRecord[]>();
+  function loadShard(shard: number): ColorRecord[] {
+    if (!shardCache.has(shard)) {
+      const shardData = JSON.parse(
+        readFileSync(join(dataDir, `shard-${shard}.json`), 'utf-8'),
+      );
+      shardCache.set(shard, shardData);
+    }
+    return shardCache.get(shard)!;
+  }
+
+  return manifest.map((entry) => {
+    const shard = loadShard(entry.shard);
+    const record = shard.find((r) => r.slug === entry.slug)!;
+    return { params: { slug: entry.slug }, props: { record } };
+  });
+}
+
+const { record } = Astro.props as { record: ColorRecord };
+const title = `${record.name} Color — ${record.hex} | HEX, RGB, HSL & Palettes`;
+const description = `${record.name} (${record.hex}) — view RGB, HSL, CMYK, LAB and OKLCH values, complementary and analogous palettes, tints, shades, and the closest named colors.`;
+const introText = getIntroText(record.name, record.hex);
+const tailwindMatch = hexToTailwindClass(record.hex);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      name: title,
+      description,
+      url: `https://hueport-color-site.pages.dev/color/${record.slug}/`,
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://hueport-color-site.pages.dev/' },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: record.name,
+          item: `https://hueport-color-site.pages.dev/color/${record.slug}/`,
+        },
+      ],
+    },
+  ],
+};
+---
+<Base title={title} description={description} canonicalPath={`/color/${record.slug}/`}>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
+
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <ColorSwatch hex={record.hex} name={record.name} size="lg" />
+    <h1 class="mt-6 text-3xl font-semibold">{record.name}</h1>
+    <p class="mt-2 font-mono text-neutral-500">{record.hex}</p>
+    <p class="mt-4 text-neutral-700">{introText}</p>
+
+    <section class="mt-8">
+      <h2 class="mb-4 text-xl font-semibold">Color values</h2>
+      <ValueTable
+        hex={record.hex}
+        rgb={record.rgb}
+        hsl={record.hsl}
+        cmyk={record.cmyk}
+        lab={record.lab}
+        oklch={record.oklch}
+      />
+    </section>
+
+    <section class="mt-10">
+      <h2 class="mb-4 text-xl font-semibold">Color harmonies</h2>
+      <HarmonyGrid harmonies={record.harmonies} />
+    </section>
+
+    <section class="mt-10">
+      <h2 class="mb-4 text-xl font-semibold">Tints &amp; shades</h2>
+      <div class="flex flex-wrap gap-2">
+        {record.tintsAndShades.tints.map((hex) => <ColorSwatch hex={hex} name={hex} />)}
+        <ColorSwatch hex={record.hex} name={record.hex} />
+        {record.tintsAndShades.shades.map((hex) => <ColorSwatch hex={hex} name={hex} />)}
+      </div>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="mb-4 text-xl font-semibold">Code snippets</h2>
+      <pre class="overflow-x-auto rounded-lg bg-neutral-900 p-4 text-sm text-white"><code>{`color: ${record.hex};
+background-color: ${record.hex};
+
+/* Tailwind CSS (closest default swatch, not an exact match) */
+${tailwindMatch.className}  /* ≈ ${tailwindMatch.hex} */
+
+/* Flutter */
+Color(0xFF${record.hex.replace('#', '').toUpperCase()})
+
+/* Swift / UIKit */
+UIColor(red: ${(record.rgb.r / 255).toFixed(2)}, green: ${(record.rgb.g / 255).toFixed(2)}, blue: ${(record.rgb.b / 255).toFixed(2)}, alpha: 1.0)`}</code></pre>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="mb-4 text-xl font-semibold">Similar named colors</h2>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {record.nearest.map((n) => (
+          <a href={`/color/${n.slug}/`} class="flex items-center gap-2 rounded border border-neutral-200 p-2">
+            <ColorSwatch hex={n.hex} name={n.name} />
+            <span class="text-sm">{n.name}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <div class="mt-10">
+      <AppCTA pageType="color" pageSlug={record.slug} />
+    </div>
+  </main>
+</Base>

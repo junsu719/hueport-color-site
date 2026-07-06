@@ -1,0 +1,28 @@
+---
+import { buildPlayStoreUrl, type PageType } from '../lib/utm';
+
+export interface Props {
+  pageType: PageType;
+  pageSlug: string;
+  message?: string;
+}
+const {
+  pageType,
+  pageSlug,
+  message = 'Spotted this color in the real world? Capture it instantly with HuePort.',
+} = Astro.props;
+
+const playStoreUrl = buildPlayStoreUrl(pageType, pageSlug);
+---
+<div class="rounded-xl border border-neutral-200 bg-neutral-50 p-6 text-center">
+  <p class="mb-4 text-lg">{message}</p>
+  <div class="flex flex-wrap justify-center gap-3">
+    <a
+      href={playStoreUrl}
+      class="rounded-full bg-neutral-900 px-5 py-2 text-white"
+      rel="noopener"
+    >
+      Get it on Google Play
+    </a>
+  </div>
+</div>

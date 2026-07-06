@@ -1,0 +1,34 @@
+---
+import CopyButton from './CopyButton.astro';
+import type { RgbValue, HslValue, CmykValue, LabValue, OklchValue } from '../lib/color-math';
+
+export interface Props {
+  hex: string;
+  rgb: RgbValue;
+  hsl: HslValue;
+  cmyk: CmykValue;
+  lab: LabValue;
+  oklch: OklchValue;
+}
+const { hex, rgb, hsl, cmyk, lab, oklch } = Astro.props;
+
+const rows = [
+  { label: 'HEX', value: hex },
+  { label: 'RGB', value: `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})` },
+  { label: 'HSL', value: `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)` },
+  { label: 'CMYK', value: `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)` },
+  { label: 'LAB', value: `lab(${lab.l}, ${lab.a}, ${lab.b})` },
+  { label: 'OKLCH', value: `oklch(${oklch.l} ${oklch.c} ${oklch.h})` },
+];
+---
+<table class="w-full border-collapse text-left">
+  <tbody>
+    {rows.map((row) => (
+      <tr class="border-b border-neutral-200">
+        <th class="py-2 pr-4 font-mono text-sm text-neutral-500">{row.label}</th>
+        <td class="py-2 font-mono text-sm">{row.value}</td>
+        <td class="py-2 text-right"><CopyButton value={row.value} label="Copy" /></td>
+      </tr>
+    ))}
+  </tbody>
+</table>

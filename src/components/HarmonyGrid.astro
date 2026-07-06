@@ -1,0 +1,40 @@
+---
+import ColorSwatch from './ColorSwatch.astro';
+
+interface HarmonyEntry {
+  name: string;
+  slug: string;
+  hex: string;
+}
+
+export interface ResolvedHarmonies {
+  complementary: HarmonyEntry;
+  analogous: HarmonyEntry[];
+  triadic: HarmonyEntry[];
+  splitComplementary: HarmonyEntry[];
+}
+
+export interface Props {
+  harmonies: ResolvedHarmonies;
+}
+const { harmonies } = Astro.props;
+
+const groups: Array<{ label: string; entries: HarmonyEntry[] }> = [
+  { label: 'Complementary', entries: [harmonies.complementary] },
+  { label: 'Analogous', entries: harmonies.analogous },
+  { label: 'Triadic', entries: harmonies.triadic },
+  { label: 'Split-Complementary', entries: harmonies.splitComplementary },
+];
+---
+<div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+  {groups.map((group) => (
+    <div>
+      <p class="mb-2 text-sm font-medium text-neutral-600">{group.label}</p>
+      <div class="flex gap-2">
+        {group.entries.map((entry) => (
+          <ColorSwatch hex={entry.hex} name={entry.name} href={`/color/${entry.slug}/`} />
+        ))}
+      </div>
+    </div>
+  ))}
+</div>

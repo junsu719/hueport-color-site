@@ -1,0 +1,18 @@
+---
+export interface Props {
+  hex: string;
+  name?: string;
+  size?: 'sm' | 'lg';
+  href?: string;
+}
+const { hex, name, size = 'sm', href } = Astro.props;
+const dimension = size === 'lg' ? 'h-48 w-full' : 'h-16 w-16';
+const Tag = href ? 'a' : 'div';
+---
+<Tag
+  href={href}
+  class={`block rounded-lg border border-neutral-200 ${dimension}`}
+  style={`background-color: ${hex};`}
+  title={name ?? hex}
+  aria-label={name ?? hex}
+></Tag>

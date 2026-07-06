@@ -1,0 +1,93 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../layouts/Base.astro';
+import ColorSwatch from '../components/ColorSwatch.astro';
+import AppCTA from '../components/AppCTA.astro';
+
+const title = 'HuePort Color — Search, Convert, and Explore Colors';
+const description = 'Search 4,900+ named colors, convert HEX/RGB/HSL/CMYK, and explore color harmonies. Free tools, no signup.';
+
+interface SearchEntry {
+  name: string;
+  hex: string;
+  slug: string;
+}
+
+const searchIndexPath = join(process.cwd(), 'data', 'colors', 'search-index.json');
+const allColors: SearchEntry[] = JSON.parse(readFileSync(searchIndexPath, 'utf-8'));
+
+// Deterministic "featured" grid: first 24 entries in the curated bestof order.
+const featured = allColors.slice(0, 24);
+---
+<Base title={title} description={description} canonicalPath="/">
+  <main class="mx-auto max-w-4xl px-4 py-10">
+    <h1 class="text-3xl font-semibold">Search any color</h1>
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Try 'sienna' or '#b3460f'"
+      class="mt-4 w-full rounded border border-neutral-300 px-4 py-3 text-lg"
+      autocomplete="off"
+    />
+    <ul id="search-results" class="mt-2 divide-y divide-neutral-100"></ul>
+
+    <section class="mt-12">
+      <h2 class="mb-4 text-xl font-semibold">Featured colors</h2>
+      <div class="grid grid-cols-4 gap-3 sm:grid-cols-6">
+        {featured.map((color) => (
+          <a href={`/color/${color.slug}/`} class="text-center">
+            <ColorSwatch hex={color.hex} name={color.name} />
+            <span class="mt-1 block truncate text-xs">{color.name}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-12">
+      <h2 class="mb-4 text-xl font-semibold">Tools</h2>
+      <a href="/tools/" class="text-neutral-700 underline">Browse all color tools →</a>
+    </section>
+
+    <div class="mt-12">
+      <AppCTA pageType="home" pageSlug="homepage" />
+    </div>
+  </main>
+
+  <script>
+    interface SearchEntry {
+      name: string;
+      hex: string;
+      slug: string;
+    }
+
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const results = document.getElementById('search-results') as HTMLUListElement;
+    let index: SearchEntry[] = [];
+
+    fetch('/search-index.json')
+      .then((res) => res.json())
+      .then((data: SearchEntry[]) => {
+        index = data;
+      });
+
+    input.addEventListener('input', () => {
+      const query = input.value.trim().toLowerCase();
+      results.innerHTML = '';
+      if (query.length < 2) return;
+      const matches = index
+        .filter((entry) => entry.name.toLowerCase().includes(query) || entry.hex.includes(query.replace('#', '')))
+        .slice(0, 10);
+      for (const match of matches) {
+        const li = document.createElement('li');
+        li.className = 'py-2';
+        const a = document.createElement('a');
+        a.href = `/color/${match.slug}/`;
+        a.className = 'flex items-center gap-3';
+        a.innerHTML = `<span style="background-color:${match.hex}" class="h-6 w-6 rounded border border-neutral-200 inline-block"></span><span>${match.name}</span><span class="text-neutral-400 font-mono text-sm">${match.hex}</span>`;
+        li.appendChild(a);
+        results.appendChild(li);
+      }
+    });
+  </script>
+</Base>

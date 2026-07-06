@@ -1,4 +1,4 @@
-import { converter, formatHex } from 'culori';
+import { converter, formatHex, differenceEuclidean } from 'culori';
 
 const toRgbMode = converter('rgb');
 const toHslMode = converter('hsl');
@@ -136,6 +136,27 @@ export function getTintsAndShades(hex: string): TintsAndShades {
     shades.push(formatHex({ mode: 'oklch', l: shadeL, c: c.c, h: c.h }));
   }
   return { tints, shades };
+}
+
+const oklabDistance = differenceEuclidean('oklab');
+
+export interface ColorEntry {
+  name: string;
+  hex: string;
+  slug: string;
+}
+
+export function findNearestColors(
+  target: string,
+  candidates: ColorEntry[],
+  count = 6,
+): ColorEntry[] {
+  return candidates
+    .filter((entry) => entry.hex.toLowerCase() !== target.toLowerCase())
+    .map((entry) => ({ entry, distance: oklabDistance(target, entry.hex) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, count)
+    .map((x) => x.entry);
 }
 
 export { formatHex };

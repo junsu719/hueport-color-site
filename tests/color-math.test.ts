@@ -7,6 +7,8 @@ import {
   hexToOklch,
   getHarmonies,
   getTintsAndShades,
+  findNearestColors,
+  type ColorEntry,
 } from '../src/lib/color-math';
 
 describe('color-math conversions', () => {
@@ -52,5 +54,35 @@ describe('color-math harmonies and tints/shades', () => {
     const { tints, shades } = getTintsAndShades(hex);
     expect(tints).toEqual(['#cd5e2e', '#e87648', '#ff8f60', '#ffa879', '#ffc191']);
     expect(shades).toEqual(['#952900', '#770200', '#5a0000', '#3d0000', '#200000']);
+  });
+});
+
+describe('color-math findNearestColors', () => {
+  const target = '#ff0000';
+  const candidates: ColorEntry[] = [
+    { name: 'Self Red', hex: '#ff0000', slug: 'self-red' },
+    { name: 'Near Red', hex: '#fe0000', slug: 'near-red' },
+    { name: 'Dark Red', hex: '#cc0000', slug: 'dark-red' },
+    { name: 'Orange', hex: '#ff8000', slug: 'orange' },
+    { name: 'Pink', hex: '#ff99aa', slug: 'pink' },
+    { name: 'Blue', hex: '#0000ff', slug: 'blue' },
+    { name: 'Green', hex: '#00ff00', slug: 'green' },
+  ];
+
+  it('excludes the exact-match self entry and sorts by ascending distance', () => {
+    const result = findNearestColors(target, candidates, 6);
+    expect(result.map((r) => r.slug)).toEqual([
+      'near-red',
+      'dark-red',
+      'orange',
+      'pink',
+      'green',
+      'blue',
+    ]);
+  });
+
+  it('respects the count parameter', () => {
+    const result = findNearestColors(target, candidates, 2);
+    expect(result.map((r) => r.slug)).toEqual(['near-red', 'dark-red']);
   });
 });

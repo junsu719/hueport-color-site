@@ -9,6 +9,7 @@ import {
   getTintsAndShades,
   findNearestColors,
   type ColorEntry,
+  hexToTailwindClass,
 } from '../src/lib/color-math';
 
 describe('color-math conversions', () => {
@@ -84,5 +85,14 @@ describe('color-math findNearestColors', () => {
   it('respects the count parameter', () => {
     const result = findNearestColors(target, candidates, 2);
     expect(result.map((r) => r.slug)).toEqual(['near-red', 'dark-red']);
+  });
+});
+
+describe('hexToTailwindClass', () => {
+  it('finds the closest Tailwind v4 default 500-weight swatch by OKLab distance', () => {
+    // Verified against the real algorithm during planning — stone-500 (#79716b) narrowly
+    // beats red-500 (#fb2c36) for this particular burnt-orange target, a good reminder that
+    // OKLab-nearest isn't always the intuitively "obvious" hue match.
+    expect(hexToTailwindClass('#b3460f')).toEqual({ className: 'bg-stone-500', hex: '#79716b' });
   });
 });

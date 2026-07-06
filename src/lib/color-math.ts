@@ -159,4 +159,51 @@ export function findNearestColors(
     .map((x) => x.entry);
 }
 
+// Tailwind v4's default palette is defined natively in OKLCH (see node_modules/tailwindcss/theme.css).
+// These are the *-500 (base tone) hex values for each of Tailwind's 22 default color families,
+// converted from their real OKLCH definitions during planning — verified, not guessed. Only the
+// -500 weight is used as a lightweight "closest hue family" hint, not a full 11-shade match.
+const TAILWIND_500_PALETTE: Array<{ name: string; hex: string }> = [
+  { name: 'red-500', hex: '#fb2c36' },
+  { name: 'orange-500', hex: '#ff6900' },
+  { name: 'amber-500', hex: '#fe9a00' },
+  { name: 'yellow-500', hex: '#f0b100' },
+  { name: 'lime-500', hex: '#7ccf00' },
+  { name: 'green-500', hex: '#00c950' },
+  { name: 'emerald-500', hex: '#00bc7d' },
+  { name: 'teal-500', hex: '#00bba7' },
+  { name: 'cyan-500', hex: '#00b8db' },
+  { name: 'sky-500', hex: '#00a6f4' },
+  { name: 'blue-500', hex: '#2b7fff' },
+  { name: 'indigo-500', hex: '#615fff' },
+  { name: 'violet-500', hex: '#8e51ff' },
+  { name: 'purple-500', hex: '#ad46ff' },
+  { name: 'fuchsia-500', hex: '#e12afb' },
+  { name: 'pink-500', hex: '#f6339a' },
+  { name: 'rose-500', hex: '#ff2056' },
+  { name: 'slate-500', hex: '#62748e' },
+  { name: 'gray-500', hex: '#6a7282' },
+  { name: 'zinc-500', hex: '#71717b' },
+  { name: 'neutral-500', hex: '#737373' },
+  { name: 'stone-500', hex: '#79716b' },
+];
+
+export interface TailwindMatch {
+  className: string;
+  hex: string;
+}
+
+export function hexToTailwindClass(hex: string): TailwindMatch {
+  let best = TAILWIND_500_PALETTE[0];
+  let bestDistance = oklabDistance(hex, best.hex);
+  for (const candidate of TAILWIND_500_PALETTE.slice(1)) {
+    const distance = oklabDistance(hex, candidate.hex);
+    if (distance < bestDistance) {
+      best = candidate;
+      bestDistance = distance;
+    }
+  }
+  return { className: `bg-${best.name}`, hex: best.hex };
+}
+
 export { formatHex };

@@ -96,4 +96,46 @@ export function hexToOklch(hex: string): OklchValue {
   };
 }
 
+function rotateHue(hex: string, degrees: number): string {
+  const c = toOklchMode(hex);
+  if (!c) throw new Error(`Invalid hex color: ${hex}`);
+  const h = ((c.h ?? 0) + degrees + 360) % 360;
+  return formatHex({ mode: 'oklch', l: c.l, c: c.c, h });
+}
+
+export interface Harmonies {
+  complementary: string;
+  analogous: [string, string];
+  triadic: [string, string];
+  splitComplementary: [string, string];
+}
+
+export function getHarmonies(hex: string): Harmonies {
+  return {
+    complementary: rotateHue(hex, 180),
+    analogous: [rotateHue(hex, 30), rotateHue(hex, -30)],
+    triadic: [rotateHue(hex, 120), rotateHue(hex, -120)],
+    splitComplementary: [rotateHue(hex, 150), rotateHue(hex, -150)],
+  };
+}
+
+export interface TintsAndShades {
+  tints: string[];
+  shades: string[];
+}
+
+export function getTintsAndShades(hex: string): TintsAndShades {
+  const c = toOklchMode(hex);
+  if (!c) throw new Error(`Invalid hex color: ${hex}`);
+  const tints: string[] = [];
+  const shades: string[] = [];
+  for (let i = 1; i <= 5; i++) {
+    const tintL = c.l + (1 - c.l) * (i / 6);
+    const shadeL = c.l * (1 - i / 6);
+    tints.push(formatHex({ mode: 'oklch', l: tintL, c: c.c, h: c.h }));
+    shades.push(formatHex({ mode: 'oklch', l: shadeL, c: c.c, h: c.h }));
+  }
+  return { tints, shades };
+}
+
 export { formatHex };

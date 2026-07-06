@@ -1,12 +1,20 @@
 ---
 import Base from '../../layouts/Base.astro';
 import AppCTA from '../../components/AppCTA.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
 
 const title = 'Online Color Picker — Pick Colors From an Image | Free Tool';
 const description = 'Upload an image and click anywhere to pick its exact color as HEX, RGB, and HSL. Runs entirely in your browser — nothing is uploaded.';
 ---
 <Base title={title} description={description} canonicalPath="/tools/color-picker/">
   <main class="mx-auto max-w-xl px-4 py-10">
+    <Breadcrumb
+      items={[
+        { name: 'Home', href: '/' },
+        { name: 'Tools', href: '/tools/' },
+        { name: 'Color Picker' },
+      ]}
+    />
     <h1 class="text-3xl font-semibold">Color Picker</h1>
     <p class="mt-2 text-neutral-600">
       Upload an image, then click anywhere on it to sample that pixel's color. Everything happens

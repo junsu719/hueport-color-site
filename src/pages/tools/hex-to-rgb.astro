@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import AppCTA from '../../components/AppCTA.astro';
+
+const title = 'HEX to RGB Converter (and RGB to HEX) | Free Online Tool';
+const description = 'Convert HEX color codes to RGB and back, instantly, in your browser. No upload, no tracking, no signup.';
+---
+<Base title={title} description={description} canonicalPath="/tools/hex-to-rgb/">
+  <main class="mx-auto max-w-xl px-4 py-10">
+    <h1 class="text-3xl font-semibold">HEX ↔ RGB Converter</h1>
+    <p class="mt-2 text-neutral-600">Type into either field — the other updates instantly.</p>
+
+    <div class="mt-8 space-y-6">
+      <label class="block">
+        <span class="text-sm font-medium text-neutral-600">HEX</span>
+        <input
+          id="hex-input"
+          type="text"
+          value="#3B82F6"
+          class="mt-1 w-full rounded border border-neutral-300 px-3 py-2 font-mono"
+        />
+      </label>
+      <label class="block">
+        <span class="text-sm font-medium text-neutral-600">RGB</span>
+        <input
+          id="rgb-input"
+          type="text"
+          value="rgb(59, 130, 246)"
+          class="mt-1 w-full rounded border border-neutral-300 px-3 py-2 font-mono"
+        />
+      </label>
+      <div id="preview" class="h-24 w-full rounded-lg border border-neutral-200" style="background-color:#3B82F6;"></div>
+    </div>
+
+    <div class="mt-10">
+      <AppCTA pageType="tool" pageSlug="hex-to-rgb" />
+    </div>
+  </main>
+
+  <script>
+    const hexInput = document.getElementById('hex-input') as HTMLInputElement;
+    const rgbInput = document.getElementById('rgb-input') as HTMLInputElement;
+    const preview = document.getElementById('preview') as HTMLDivElement;
+
+    function hexToRgbString(hex: string): string | null {
+      const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+      if (!match) return null;
+      const num = parseInt(match[1], 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function rgbToHexString(rgb: string): string | null {
+      const match = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i.exec(rgb.trim());
+      if (!match) return null;
+      const [, r, g, b] = match;
+      const toHex = (n: string) => Number(n).toString(16).padStart(2, '0');
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+    }
+
+    hexInput.addEventListener('input', () => {
+      const rgb = hexToRgbString(hexInput.value);
+      if (rgb) {
+        rgbInput.value = rgb;
+        preview.style.backgroundColor = hexInput.value;
+      }
+    });
+
+    rgbInput.addEventListener('input', () => {
+      const hex = rgbToHexString(rgbInput.value);
+      if (hex) {
+        hexInput.value = hex;
+        preview.style.backgroundColor = hex;
+      }
+    });
+  </script>
+</Base>

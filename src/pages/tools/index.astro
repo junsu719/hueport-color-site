@@ -1,0 +1,24 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const title = 'Free Color Tools — Converters, Picker & More | HuePort';
+const description = 'Free browser-based color tools: HEX to RGB converter, color picker, and more. No signup, no tracking.';
+
+const tools = [
+  { href: '/tools/hex-to-rgb/', name: 'HEX to RGB Converter', blurb: 'Convert between HEX and RGB instantly.' },
+  { href: '/tools/color-picker/', name: 'Color Picker', blurb: 'Pick exact colors from any uploaded image.' },
+];
+---
+<Base title={title} description={description} canonicalPath="/tools/">
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="text-3xl font-semibold">Color Tools</h1>
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      {tools.map((tool) => (
+        <a href={tool.href} class="rounded-xl border border-neutral-200 p-6 hover:border-neutral-400">
+          <h2 class="text-lg font-medium">{tool.name}</h2>
+          <p class="mt-1 text-sm text-neutral-600">{tool.blurb}</p>
+        </a>
+      ))}
+    </div>
+  </main>
+</Base>

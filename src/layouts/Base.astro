@@ -1,0 +1,39 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  ogImagePath?: string;
+}
+
+const { title, description, canonicalPath, ogImagePath = '/og-image.png' } = Astro.props;
+const site = Astro.site ?? new URL('https://hueport-color-site.pages.dev');
+const canonicalUrl = new URL(canonicalPath, site).toString();
+const ogImageUrl = new URL(ogImagePath, site).toString();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-white text-neutral-900 antialiased">
+    <slot />
+  </body>
+</html>

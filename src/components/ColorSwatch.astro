@@ -8,9 +8,14 @@ export interface Props {
 const { hex, name, size = 'sm', href } = Astro.props;
 const dimension = size === 'lg' ? 'h-48 w-full' : 'h-16 w-16';
 const Tag = href ? 'a' : 'div';
+// aria-label is only valid on elements with an implicit or explicit role that supports it.
+// <a> already has an implicit "link" role; a plain <div> needs role="img" (it's a solid color
+// swatch, semantically an image) or aria-label is invalid ARIA per Lighthouse's aria-prohibited-attr check.
+const role = href ? undefined : 'img';
 ---
 <Tag
   href={href}
+  role={role}
   class={`block rounded-lg border border-neutral-200 ${dimension}`}
   style={`background-color: ${hex};`}
   title={name ?? hex}

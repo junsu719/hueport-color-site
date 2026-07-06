@@ -1,0 +1,16 @@
+# Decisions Log — hueport-color-site
+
+Per the Bible's escape-hatch/amendment rules: implementation-level calls made autonomously, logged here, not asked about mid-flight.
+
+## 2026-07-06 — Phase 1 planning decisions
+
+1. **"Top ~5,000 popular colors" data source**: used `color-name-list`'s built-in `bestof` curated list (4,945 entries) instead of building custom popularity-ranking logic. Close enough to the spec's "~5,000" target, and it's exactly the kind of curated subset the spec asked for.
+2. **CMYK conversion**: culori has no CMYK color mode (CMYK is device-dependent, not colorimetric). Implemented the standard naive RGB→CMYK formula by hand. Display-only value, not press-accurate — matches what every other web color tool does.
+3. **Nearest-neighbor scope**: "6 closest named colors" computed only within the Phase 1 published subset (4,945 colors), so every generated internal link points to a page that actually exists. Must be recomputed against the full 31,912-color set when Phase 2 expands page count — not done yet.
+4. **Cloudflare custom event tracking**: spec §5 asked for a custom analytics event on CTA click. Skipped for Phase 1 — couldn't verify the CF Web Analytics free tier has a stable custom-event API without Zaraz (a separate product), and it's not in the Phase 1 acceptance checklist. UTM links (the part that actually drives attribution) are fully implemented and tested. Revisit if Jun wants in-page click analytics later.
+5. **Repo location**: moved to WSL2 native filesystem (`~/projects/hueport-color-site`), fully decoupled from `D:\dev\TrueHue`, per Jun's decision to develop on WSL2 rather than native Windows for this file-heavy Node workload.
+6. **Tailwind integration**: used the v4-native `@tailwindcss/vite` Vite plugin (not the older `@astrojs/tailwind` package) — the officially recommended path for Tailwind v4.
+7. **Harmony color links**: `getHarmonies()` computes theoretically "ideal" hues via OKLCH rotation, which almost never match an existing named color exactly. Per spec §4.1 (explicitly flagged as important — "這是內部連結網的骨架"), each harmony slot is resolved to the *nearest actual published color* in `prepare-data.mjs`, so every harmony link on a color page points to a real page.
+8. **Tailwind "approximate class" snippet**: only the 22 default `*-500` (base tone) swatches are used as match candidates, not the full 11-shade × 22-hue palette — a lightweight "closest hue family" hint is enough for a one-line code snippet, not worth a much bigger table.
+9. **OG image**: Phase 1 uses a single static image (HuePort's existing app icon, copied to `public/og-image.png`) site-wide, per spec's explicit "Phase 1 用單一模板圖" — per-color dynamic OG images are Phase 2 scope.
+10. **`astro.config.mjs`'s `site` URL is a placeholder** until Jun creates the actual Cloudflare Pages project and gets the real `*.pages.dev` subdomain — must be updated (along with `public/robots.txt`'s `Sitemap:` line) before relying on canonical URLs / sitemap / OG URLs in production.

@@ -13,8 +13,26 @@ const description = 'Upload an image and click anywhere to pick its exact color 
       in your browser — the image is never uploaded anywhere.
     </p>
 
-    <input id="image-input" type="file" accept="image/*" class="mt-6 block" />
-    <canvas id="canvas" class="mt-4 max-w-full rounded-lg border border-neutral-200"></canvas>
+    <div
+      id="dropzone"
+      class="relative mt-6 flex min-h-64 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 p-6 text-center transition-colors hover:border-neutral-400 hover:bg-neutral-100"
+    >
+      <label
+        for="image-input"
+        id="dropzone-label"
+        class="absolute inset-0 z-10 flex cursor-pointer flex-col items-center justify-center gap-2 text-neutral-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-8 w-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3.75 3.75M12 9.75l3.75 3.75M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+        </svg>
+        <span class="text-sm">Click or drag an image here</span>
+      </label>
+      <input id="image-input" type="file" accept="image/*" class="sr-only" />
+      <canvas id="canvas" class="hidden max-w-full cursor-crosshair rounded-lg"></canvas>
+    </div>
+    <p id="change-image" class="mt-2 hidden cursor-pointer text-sm text-neutral-500 underline">
+      Choose a different image
+    </p>
 
     <div class="mt-6 flex items-center gap-4">
       <div id="picked-swatch" class="h-16 w-16 rounded-lg border border-neutral-200"></div>
@@ -34,24 +52,59 @@ const description = 'Upload an image and click anywhere to pick its exact color 
   </main>
 
   <script>
+    const dropzone = document.getElementById('dropzone') as HTMLDivElement;
+    const dropzoneLabel = document.getElementById('dropzone-label') as HTMLLabelElement;
     const imageInput = document.getElementById('image-input') as HTMLInputElement;
     const canvas = document.getElementById('canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
+    const changeImage = document.getElementById('change-image') as HTMLParagraphElement;
     const pickedSwatch = document.getElementById('picked-swatch') as HTMLDivElement;
     const pickedHex = document.getElementById('picked-hex') as HTMLParagraphElement;
     const pickedRgb = document.getElementById('picked-rgb') as HTMLParagraphElement;
 
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files?.[0];
-      if (!file) return;
+    function loadImageFile(file: File) {
       const img = new Image();
       img.onload = () => {
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         ctx.drawImage(img, 0, 0);
         URL.revokeObjectURL(img.src);
+        dropzoneLabel.classList.add('hidden');
+        canvas.classList.remove('hidden');
+        changeImage.classList.remove('hidden');
       };
       img.src = URL.createObjectURL(file);
+    }
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files?.[0];
+      if (file) loadImageFile(file);
+    });
+
+    changeImage.addEventListener('click', () => {
+      imageInput.value = '';
+      imageInput.click();
+    });
+
+    for (const eventName of ['dragover', 'dragenter']) {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('border-neutral-400', 'bg-neutral-100');
+      });
+    }
+
+    for (const eventName of ['dragleave', 'dragend']) {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('border-neutral-400', 'bg-neutral-100');
+      });
+    }
+
+    dropzone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      dropzone.classList.remove('border-neutral-400', 'bg-neutral-100');
+      const file = event.dataTransfer?.files?.[0];
+      if (file && file.type.startsWith('image/')) loadImageFile(file);
     });
 
     canvas.addEventListener('click', (event) => {

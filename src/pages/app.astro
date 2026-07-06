@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import { buildPlayStoreUrl } from '../lib/utm';
+
+const title = 'HuePort — Instant Real-World Color Capture App';
+const description = 'HuePort turns your phone camera into a real-time color meter: HEX, RGB, HSL and CMYK values for anything you point it at. One-time purchase, no subscription.';
+const playStoreUrl = buildPlayStoreUrl('app', 'landing');
+
+const faqs = [
+  {
+    q: 'Does HuePort require a subscription?',
+    a: 'No. HuePort is a one-time purchase (hueport_pro) that unlocks every feature permanently — no recurring fees.',
+  },
+  {
+    q: 'How does real-time color capture work?',
+    a: 'Point your camera at anything and HuePort reads the color under the reticle live, showing HEX, RGB, HSL and CMYK values instantly.',
+  },
+  {
+    q: 'Can I save colors I find?',
+    a: 'Yes — every captured color can be saved to your personal color gallery for later reference.',
+  },
+  {
+    q: 'Is HuePort available on iOS?',
+    a: 'HuePort is currently in TestFlight external testing on iOS, with a public App Store release planned once review completes.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+};
+---
+<Base title={title} description={description} canonicalPath="/app/">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
+
+  <main class="mx-auto max-w-2xl px-4 py-16 text-center">
+    <h1 class="text-4xl font-semibold">HuePort</h1>
+    <p class="mt-4 text-xl text-neutral-600">
+      Point your camera at anything. See its exact color, instantly.
+    </p>
+    <a
+      href={playStoreUrl}
+      class="mt-8 inline-block rounded-full bg-neutral-900 px-6 py-3 text-white"
+      rel="noopener"
+    >
+      Get it on Google Play
+    </a>
+
+    <section class="mt-16 grid gap-8 text-left sm:grid-cols-3">
+      <div>
+        <h2 class="font-medium">Capture instantly</h2>
+        <p class="mt-1 text-sm text-neutral-600">Live camera color reading — no photo, no wait.</p>
+      </div>
+      <div>
+        <h2 class="font-medium">Every format you need</h2>
+        <p class="mt-1 text-sm text-neutral-600">HEX, RGB, HSL, CMYK, and more, all at once.</p>
+      </div>
+      <div>
+        <h2 class="font-medium">Build your palette</h2>
+        <p class="mt-1 text-sm text-neutral-600">Save colors to a personal gallery as you go.</p>
+      </div>
+    </section>
+
+    <section class="mt-16 text-left">
+      <h2 class="text-2xl font-semibold">One-time purchase. No subscription.</h2>
+      <p class="mt-2 text-neutral-600">
+        HuePort's full feature set unlocks with a single purchase (hueport_pro) — pay once, own it
+        forever.
+      </p>
+    </section>
+
+    <section class="mt-16 text-left">
+      <h2 class="text-2xl font-semibold">FAQ</h2>
+      <div class="mt-4 space-y-6">
+        {faqs.map((faq) => (
+          <div>
+            <h3 class="font-medium">{faq.q}</h3>
+            <p class="mt-1 text-sm text-neutral-600">{faq.a}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+</Base>

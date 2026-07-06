@@ -1,0 +1,70 @@
+---
+import Base from '../../layouts/Base.astro';
+import AppCTA from '../../components/AppCTA.astro';
+
+const title = 'Online Color Picker — Pick Colors From an Image | Free Tool';
+const description = 'Upload an image and click anywhere to pick its exact color as HEX, RGB, and HSL. Runs entirely in your browser — nothing is uploaded.';
+---
+<Base title={title} description={description} canonicalPath="/tools/color-picker/">
+  <main class="mx-auto max-w-xl px-4 py-10">
+    <h1 class="text-3xl font-semibold">Color Picker</h1>
+    <p class="mt-2 text-neutral-600">
+      Upload an image, then click anywhere on it to sample that pixel's color. Everything happens
+      in your browser — the image is never uploaded anywhere.
+    </p>
+
+    <input id="image-input" type="file" accept="image/*" class="mt-6 block" />
+    <canvas id="canvas" class="mt-4 max-w-full rounded-lg border border-neutral-200"></canvas>
+
+    <div class="mt-6 flex items-center gap-4">
+      <div id="picked-swatch" class="h-16 w-16 rounded-lg border border-neutral-200"></div>
+      <div>
+        <p id="picked-hex" class="font-mono">—</p>
+        <p id="picked-rgb" class="font-mono text-sm text-neutral-500">—</p>
+      </div>
+    </div>
+
+    <div class="mt-10">
+      <AppCTA
+        pageType="tool"
+        pageSlug="color-picker"
+        message="Need to pick colors from the real world, not just the screen? Try HuePort."
+      />
+    </div>
+  </main>
+
+  <script>
+    const imageInput = document.getElementById('image-input') as HTMLInputElement;
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d')!;
+    const pickedSwatch = document.getElementById('picked-swatch') as HTMLDivElement;
+    const pickedHex = document.getElementById('picked-hex') as HTMLParagraphElement;
+    const pickedRgb = document.getElementById('picked-rgb') as HTMLParagraphElement;
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(img.src);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+
+    canvas.addEventListener('click', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((event.clientX - rect.left) * scaleX);
+      const y = Math.floor((event.clientY - rect.top) * scaleY);
+      const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
+      const hex = `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+      pickedSwatch.style.backgroundColor = hex;
+      pickedHex.textContent = hex;
+      pickedRgb.textContent = `rgb(${r}, ${g}, ${b})`;
+    });
+  </script>
+</Base>

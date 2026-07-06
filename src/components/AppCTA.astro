@@ -14,12 +14,21 @@ const {
 
 const playStoreUrl = buildPlayStoreUrl(pageType, pageSlug);
 ---
-<div class="rounded-xl border border-neutral-200 bg-neutral-50 p-6 text-center">
-  <p class="mb-4 text-lg">{message}</p>
-  <div class="flex flex-wrap justify-center gap-3">
+<div class="rounded-xl border border-neutral-200 bg-neutral-50 p-6">
+  <div class="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+    <img
+      src="/app-icon.jpg"
+      alt="HuePort app icon"
+      width="56"
+      height="56"
+      loading="lazy"
+      decoding="async"
+      class="h-14 w-14 shrink-0 rounded-xl"
+    />
+    <p class="flex-1 text-lg">{message}</p>
     <a
       href={playStoreUrl}
-      class="rounded-full bg-neutral-900 px-5 py-2 text-white"
+      class="shrink-0 rounded-full bg-neutral-900 px-5 py-2 text-white"
       rel="noopener"
     >
       Get it on Google Play

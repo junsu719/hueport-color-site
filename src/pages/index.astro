@@ -21,6 +21,7 @@ const allColors: SearchEntry[] = JSON.parse(readFileSync(searchIndexPath, 'utf-8
 const featured = allColors.slice(0, 24);
 ---
 <Base title={title} description={description} canonicalPath="/">
+  <!-- ⚠️ 勿刪：Google Search Console 擁有權驗證標籤，移除會導致驗證失效 -->
   <meta slot="head" name="google-site-verification" content="1Hva6vptJOlUI9P-IiY-AylbxVEEj_ayP92ZO7K9C1Y" />
   <main class="mx-auto max-w-4xl px-4 py-10">
     <h1 class="text-3xl font-semibold">Search any color</h1>

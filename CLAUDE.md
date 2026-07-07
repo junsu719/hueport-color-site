@@ -27,6 +27,10 @@ Jun deploys manually via the Cloudflare Pages dashboard (GitHub connect, build c
 `npm run build`, output directory `dist`). Claude does not have deployment credentials for this
 project and should not attempt to deploy.
 
+## SEO / Search Console
+- `src/pages/index.astro` 首頁 `<head>` 裡的 `google-site-verification` meta 標籤絕對不可刪除，
+  它是 GSC 擁有權驗證憑證，移除會導致 Google 停止收錄。任何 head 清理／重構都要保留它。
+
 ## Post-launch checkpoints (operational, not code — tracked by Jun)
 - Week 6–8: if Search Console indexed pages < 1,000, treat as a technical problem (sitemap /
   content quality) and debug — don't just keep waiting.

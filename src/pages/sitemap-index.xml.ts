@@ -20,6 +20,7 @@ export const GET: APIRoute = ({ site }) => {
     '/tools/',
     '/tools/hex-to-rgb/',
     '/tools/color-picker/',
+    '/tools/gradient-generator/',
     '/colors/',
   ];
   const colorPaths = allColors.map((c) => `/color/${c.slug}/`);

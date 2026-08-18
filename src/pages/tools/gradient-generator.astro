@@ -1,0 +1,374 @@
+---
+import Base from '../../layouts/Base.astro';
+import AppCTA from '../../components/AppCTA.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+
+const title = 'Gradient Generator — Create OKLCH CSS Gradients | Free Tool';
+const description = 'Pick colors from an image and create smooth OKLCH gradients. Export CSS, Flutter, SwiftUI, or PNG — entirely in your browser.';
+---
+<Base title={title} description={description} canonicalPath="/tools/gradient-generator/">
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <Breadcrumb
+      items={[
+        { name: 'Home', href: '/' },
+        { name: 'Tools', href: '/tools/' },
+        { name: 'Gradient Generator' },
+      ]}
+    />
+    <h1 class="text-3xl font-semibold">Gradient Generator</h1>
+    <p class="mt-2 text-neutral-600">
+      Upload a photo and pick up to five colors to build a smooth gradient. Your image stays in
+      your browser and is never uploaded anywhere.
+    </p>
+
+    <div
+      id="dropzone"
+      class="relative mt-6 flex min-h-64 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 p-6 text-center transition-colors hover:border-neutral-400 hover:bg-neutral-100"
+    >
+      <label
+        for="image-input"
+        id="dropzone-label"
+        class="absolute inset-0 z-10 flex cursor-pointer flex-col items-center justify-center gap-2 text-neutral-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-8 w-8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3.75 3.75M12 9.75l3.75 3.75M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+        </svg>
+        <span class="text-sm">Click or drag an image here</span>
+      </label>
+      <input id="image-input" type="file" accept="image/*" class="sr-only" />
+      <canvas id="source-canvas" class="hidden max-w-full cursor-crosshair rounded-lg"></canvas>
+    </div>
+    <p id="change-image" class="mt-2 hidden cursor-pointer text-sm text-neutral-500 underline">
+      Choose a different image
+    </p>
+    <p id="picker-hint" class="mt-2 hidden text-sm text-neutral-500">Click the image to add a color.</p>
+
+    <section class="mt-8" aria-labelledby="selected-colors-heading">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="selected-colors-heading" class="text-lg font-medium">Selected colors</h2>
+        <p id="color-count" class="text-sm text-neutral-500">0 / 5</p>
+      </div>
+      <div id="selected-colors" class="mt-3 space-y-2"></div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="preview-heading">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="preview-heading" class="text-lg font-medium">Preview</h2>
+        <button id="distribute-button" type="button" class="rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100">
+          Distribute evenly
+        </button>
+      </div>
+      <div id="gradient-preview" class="mt-3 h-56 w-full rounded-lg border border-neutral-200 bg-neutral-50"></div>
+      <div id="stop-track" class="relative mt-4 h-10 rounded-lg border border-neutral-200 bg-neutral-50" aria-label="Gradient stop positions"></div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="angle-heading">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="angle-heading" class="text-lg font-medium">Angle</h2>
+        <output id="angle-output" class="font-mono text-sm">90°</output>
+      </div>
+      <input id="angle-input" type="range" min="0" max="360" value="90" class="mt-3 w-full" aria-label="Gradient angle" />
+      <div class="mt-3 flex flex-wrap gap-2">
+        {[0, 45, 90, 135, 180].map((angle) => (
+          <button type="button" class="angle-button rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100" data-angle={angle}>{angle}°</button>
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-8" aria-labelledby="export-heading">
+      <h2 id="export-heading" class="text-lg font-medium">Export</h2>
+      <div class="mt-3 space-y-4">
+        <div class="rounded-lg border border-neutral-200 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-medium">CSS — OKLCH</p>
+            <button type="button" class="copy-button rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100" data-output="native">Copy CSS</button>
+          </div>
+          <pre id="native-output" class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-sm text-neutral-600">Select at least two colors.</pre>
+        </div>
+        <div class="rounded-lg border border-neutral-200 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-medium">CSS — compatible version</p>
+            <button type="button" class="copy-button rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100" data-output="compatible">Copy CSS</button>
+          </div>
+          <pre id="compatible-output" class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-sm text-neutral-600">Select at least two colors.</pre>
+        </div>
+        <div class="rounded-lg border border-neutral-200 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-medium">Flutter</p>
+            <button type="button" class="copy-button rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100" data-output="flutter">Copy Flutter</button>
+          </div>
+          <pre id="flutter-output" class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-sm text-neutral-600">Select at least two colors.</pre>
+        </div>
+        <div class="rounded-lg border border-neutral-200 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-medium">SwiftUI</p>
+            <button type="button" class="copy-button rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100" data-output="swift">Copy SwiftUI</button>
+          </div>
+          <pre id="swift-output" class="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-sm text-neutral-600">Select at least two colors.</pre>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="text-sm font-medium text-neutral-600" for="png-size">PNG size</label>
+          <select id="png-size" class="rounded border border-neutral-300 px-2 py-1 text-sm">
+            <option value="1080x1920">Wallpaper — 1080 × 1920</option>
+            <option value="1080x1080">Square — 1080 × 1080</option>
+            <option value="1920x1080">Wide — 1920 × 1080</option>
+          </select>
+          <button id="download-png" type="button" class="rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100">Download PNG</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="mt-10">
+      <AppCTA
+        pageType="tool"
+        pageSlug="gradient-generator"
+        message="Found a gradient worth keeping? Capture its colors anywhere with HuePort."
+      />
+    </div>
+  </main>
+
+  <script>
+    import {
+      buildCompatibleCssGradient,
+      buildFlutterGradient,
+      buildNativeCssGradient,
+      buildSwiftUiGradient,
+      interpolateOklchStops,
+      type GradientStop,
+    } from '../../lib/gradient-math';
+
+    interface SelectedStop extends GradientStop {
+      id: number;
+    }
+
+    const maximumColors = 5;
+    const compatibilitySamples = 24;
+    const dropzone = document.getElementById('dropzone') as HTMLDivElement;
+    const dropzoneLabel = document.getElementById('dropzone-label') as HTMLLabelElement;
+    const imageInput = document.getElementById('image-input') as HTMLInputElement;
+    const sourceCanvas = document.getElementById('source-canvas') as HTMLCanvasElement;
+    const sourceContext = sourceCanvas.getContext('2d')!;
+    const changeImage = document.getElementById('change-image') as HTMLParagraphElement;
+    const pickerHint = document.getElementById('picker-hint') as HTMLParagraphElement;
+    const colorCount = document.getElementById('color-count') as HTMLParagraphElement;
+    const selectedColors = document.getElementById('selected-colors') as HTMLDivElement;
+    const gradientPreview = document.getElementById('gradient-preview') as HTMLDivElement;
+    const stopTrack = document.getElementById('stop-track') as HTMLDivElement;
+    const distributeButton = document.getElementById('distribute-button') as HTMLButtonElement;
+    const angleInput = document.getElementById('angle-input') as HTMLInputElement;
+    const angleOutput = document.getElementById('angle-output') as HTMLOutputElement;
+    const nativeOutput = document.getElementById('native-output') as HTMLPreElement;
+    const compatibleOutput = document.getElementById('compatible-output') as HTMLPreElement;
+    const flutterOutput = document.getElementById('flutter-output') as HTMLPreElement;
+    const swiftOutput = document.getElementById('swift-output') as HTMLPreElement;
+    const pngSize = document.getElementById('png-size') as HTMLSelectElement;
+    const downloadPng = document.getElementById('download-png') as HTMLButtonElement;
+
+    let nextId = 1;
+    let dragIndex: number | null = null;
+    let activeStopIndex: number | null = null;
+    let stops: SelectedStop[] = [];
+
+    function hasGradient(): boolean {
+      return stops.length >= 2;
+    }
+
+    function distributeStops() {
+      stops = stops.map((stop, index) => ({
+        ...stop,
+        position: stops.length === 1 ? 0 : (index / (stops.length - 1)) * 100,
+      }));
+    }
+
+    function gradientStops(): GradientStop[] {
+      return stops.map(({ hex, position }) => ({ hex, position }));
+    }
+
+    function updateOutputs() {
+      const ready = hasGradient();
+      const message = 'Select at least two colors.';
+      const nativeCss = ready ? buildNativeCssGradient(gradientStops(), Number(angleInput.value)) : message;
+      const compatibleCss = ready ? buildCompatibleCssGradient(gradientStops(), Number(angleInput.value), compatibilitySamples) : message;
+      nativeOutput.textContent = nativeCss;
+      compatibleOutput.textContent = compatibleCss;
+      flutterOutput.textContent = ready ? buildFlutterGradient(gradientStops(), Number(angleInput.value)) : message;
+      swiftOutput.textContent = ready ? buildSwiftUiGradient(gradientStops(), Number(angleInput.value)) : message;
+      gradientPreview.style.backgroundImage = ready
+        ? CSS.supports('background-image', 'linear-gradient(in oklch shorter hue, red, blue)')
+          ? nativeCss
+          : compatibleCss
+        : '';
+      downloadPng.disabled = !ready;
+      document.querySelectorAll<HTMLButtonElement>('.copy-button').forEach((button) => {
+        button.disabled = !ready;
+      });
+    }
+
+    function renderSelectedColors() {
+      colorCount.textContent = `${stops.length} / ${maximumColors}`;
+      selectedColors.innerHTML = stops.length
+        ? stops.map((stop, index) => `<div class="flex items-center gap-3 rounded-lg border border-neutral-200 p-2" draggable="true" data-index="${index}"><span class="h-8 w-8 shrink-0 rounded border border-neutral-200" style="background-color:${stop.hex}"></span><span class="flex-1 font-mono text-sm">${stop.hex}</span><button type="button" class="remove-color rounded border border-neutral-300 px-2 py-1 text-sm hover:bg-neutral-100" data-index="${index}" aria-label="Remove ${stop.hex}">Remove</button></div>`).join('')
+        : '<p class="text-sm text-neutral-500">Pick colors from your image to start.</p>';
+      selectedColors.querySelectorAll<HTMLButtonElement>('.remove-color').forEach((button) => {
+        button.addEventListener('click', () => {
+          stops.splice(Number(button.dataset.index), 1);
+          distributeStops();
+          render();
+        });
+      });
+      selectedColors.querySelectorAll<HTMLDivElement>('[draggable="true"]').forEach((item) => {
+        item.addEventListener('dragstart', () => {
+          dragIndex = Number(item.dataset.index);
+        });
+        item.addEventListener('dragover', (event) => event.preventDefault());
+        item.addEventListener('drop', (event) => {
+          event.preventDefault();
+          const targetIndex = Number(item.dataset.index);
+          if (dragIndex !== null && dragIndex !== targetIndex) {
+            const [moved] = stops.splice(dragIndex, 1);
+            stops.splice(targetIndex, 0, moved);
+            distributeStops();
+            render();
+          }
+          dragIndex = null;
+        });
+      });
+    }
+
+    function renderStopTrack() {
+      stopTrack.innerHTML = stops.map((stop, index) => `<button type="button" class="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-neutral-900 bg-white" style="left:${stop.position}%" data-index="${index}" aria-label="Move ${stop.hex} stop at ${Math.round(stop.position)}%"></button>`).join('');
+      stopTrack.querySelectorAll<HTMLButtonElement>('button').forEach((button) => {
+        button.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          activeStopIndex = Number(button.dataset.index);
+          button.setPointerCapture(event.pointerId);
+        });
+      });
+    }
+
+    function render() {
+      angleOutput.textContent = `${angleInput.value}°`;
+      renderSelectedColors();
+      renderStopTrack();
+      updateOutputs();
+    }
+
+    function loadImageFile(file: File) {
+      const image = new Image();
+      image.onload = () => {
+        sourceCanvas.width = image.naturalWidth;
+        sourceCanvas.height = image.naturalHeight;
+        sourceContext.drawImage(image, 0, 0);
+        URL.revokeObjectURL(image.src);
+        dropzoneLabel.classList.add('hidden');
+        sourceCanvas.classList.remove('hidden');
+        changeImage.classList.remove('hidden');
+        pickerHint.classList.remove('hidden');
+      };
+      image.src = URL.createObjectURL(file);
+    }
+
+    async function copyOutput(name: string, button: HTMLButtonElement) {
+      const output = document.getElementById(`${name}-output`)?.textContent;
+      if (!output || !hasGradient()) return;
+      await navigator.clipboard.writeText(output);
+      const label = button.textContent;
+      button.textContent = 'Copied!';
+      setTimeout(() => {
+        button.textContent = label;
+      }, 1500);
+    }
+
+    function downloadGradientPng() {
+      if (!hasGradient()) return;
+      const [width, height] = pngSize.value.split('x').map(Number);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d')!;
+      const angle = (Number(angleInput.value) * Math.PI) / 180;
+      const radius = Math.hypot(width, height) / 2;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const vectorX = Math.sin(angle);
+      const vectorY = -Math.cos(angle);
+      const gradient = context.createLinearGradient(centerX - vectorX * radius, centerY - vectorY * radius, centerX + vectorX * radius, centerY + vectorY * radius);
+      interpolateOklchStops(gradientStops(), 256).forEach((sample) => gradient.addColorStop(sample.position / 100, sample.hex));
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, width, height);
+      const link = document.createElement('a');
+      link.download = `hueport-gradient-${width}x${height}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files?.[0];
+      if (file) loadImageFile(file);
+    });
+    changeImage.addEventListener('click', () => {
+      imageInput.value = '';
+      imageInput.click();
+    });
+    for (const eventName of ['dragover', 'dragenter']) {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('border-neutral-400', 'bg-neutral-100');
+      });
+    }
+    for (const eventName of ['dragleave', 'dragend']) {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('border-neutral-400', 'bg-neutral-100');
+      });
+    }
+    dropzone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      dropzone.classList.remove('border-neutral-400', 'bg-neutral-100');
+      const file = event.dataTransfer?.files?.[0];
+      if (file?.type.startsWith('image/')) loadImageFile(file);
+    });
+    sourceCanvas.addEventListener('click', (event) => {
+      if (stops.length >= maximumColors) return;
+      const rect = sourceCanvas.getBoundingClientRect();
+      const scaleX = sourceCanvas.width / rect.width;
+      const scaleY = sourceCanvas.height / rect.height;
+      const x = Math.floor((event.clientX - rect.left) * scaleX);
+      const y = Math.floor((event.clientY - rect.top) * scaleY);
+      const [red, green, blue] = sourceContext.getImageData(x, y, 1, 1).data;
+      const hex = `#${[red, green, blue].map((value) => value.toString(16).padStart(2, '0')).join('')}`.toUpperCase();
+      stops.push({ id: nextId++, hex, position: 0 });
+      distributeStops();
+      render();
+    });
+    window.addEventListener('pointermove', (event) => {
+      if (activeStopIndex === null) return;
+      const rect = stopTrack.getBoundingClientRect();
+      const rawPosition = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
+      const before = stops[activeStopIndex - 1]?.position ?? 0;
+      const after = stops[activeStopIndex + 1]?.position ?? 100;
+      stops[activeStopIndex].position = Math.min(after, Math.max(before, rawPosition));
+      renderStopTrack();
+      updateOutputs();
+    });
+    window.addEventListener('pointerup', () => {
+      activeStopIndex = null;
+    });
+    distributeButton.addEventListener('click', () => {
+      distributeStops();
+      render();
+    });
+    angleInput.addEventListener('input', render);
+    document.querySelectorAll<HTMLButtonElement>('.angle-button').forEach((button) => {
+      button.addEventListener('click', () => {
+        angleInput.value = button.dataset.angle ?? '90';
+        render();
+      });
+    });
+    document.querySelectorAll<HTMLButtonElement>('.copy-button').forEach((button) => {
+      button.addEventListener('click', () => copyOutput(button.dataset.output ?? '', button));
+    });
+    downloadPng.addEventListener('click', downloadGradientPng);
+    render();
+  </script>
+</Base>

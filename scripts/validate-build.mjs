@@ -74,6 +74,7 @@ function main() {
     'tools/index.html',
     'tools/hex-to-rgb/index.html',
     'tools/color-picker/index.html',
+    'tools/gradient-generator/index.html',
     'colors/index.html',
     'sitemap-index.xml',
     'robots.txt',

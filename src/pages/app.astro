@@ -1,10 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
-import { buildPlayStoreUrl } from '../lib/utm';
+import AppCTA from '../components/AppCTA.astro';
 
 const title = 'HuePort — Instant Real-World Color Capture App';
 const description = 'HuePort turns your phone camera into a real-time color meter: HEX, RGB, HSL and CMYK values for anything you point it at. One-time purchase, no subscription.';
-const playStoreUrl = buildPlayStoreUrl('app', 'landing');
 
 const faqs = [
   {
@@ -21,7 +20,7 @@ const faqs = [
   },
   {
     q: 'Is HuePort available on iOS?',
-    a: 'HuePort is currently in TestFlight external testing on iOS, with a public App Store release planned once review completes.',
+    a: 'Yes — HuePort is available on the App Store as well as Google Play.',
   },
 ];
 
@@ -56,13 +55,9 @@ const jsonLd = {
       class="mt-8 w-full rounded-xl border border-neutral-200"
     />
 
-    <a
-      href={playStoreUrl}
-      class="mt-8 inline-block rounded-full bg-neutral-900 px-6 py-3 text-white"
-      rel="noopener"
-    >
-      Get it on Google Play
-    </a>
+    <div class="mt-8">
+      <AppCTA pageType="app" pageSlug="landing" />
+    </div>
 
     <section class="mt-16 grid gap-8 text-left sm:grid-cols-3">
       <div>

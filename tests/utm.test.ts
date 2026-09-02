@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPlayStoreUrl } from '../src/lib/utm';
+import { buildPlayStoreUrl, buildAppStoreUrl } from '../src/lib/utm';
 
 describe('buildPlayStoreUrl', () => {
   it('builds a URL with the correct base and required UTM params for a color page', () => {
@@ -16,6 +16,25 @@ describe('buildPlayStoreUrl', () => {
   it('accepts all four page types', () => {
     for (const pageType of ['color', 'tool', 'app', 'home'] as const) {
       const url = buildPlayStoreUrl(pageType, 'some-slug');
+      expect(new URL(url).searchParams.get('utm_campaign')).toBe(pageType);
+    }
+  });
+});
+
+describe('buildAppStoreUrl', () => {
+  it('builds a URL with the correct base and required UTM params for a color page', () => {
+    const url = buildAppStoreUrl('color', 'sienna-b3460f');
+    const parsed = new URL(url);
+    expect(parsed.origin + parsed.pathname).toBe('https://apps.apple.com/us/app/hueport/id6785950182');
+    expect(parsed.searchParams.get('utm_source')).toBe('colorsite');
+    expect(parsed.searchParams.get('utm_medium')).toBe('referral');
+    expect(parsed.searchParams.get('utm_campaign')).toBe('color');
+    expect(parsed.searchParams.get('utm_content')).toBe('sienna-b3460f');
+  });
+
+  it('accepts all four page types', () => {
+    for (const pageType of ['color', 'tool', 'app', 'home'] as const) {
+      const url = buildAppStoreUrl(pageType, 'some-slug');
       expect(new URL(url).searchParams.get('utm_campaign')).toBe(pageType);
     }
   });
